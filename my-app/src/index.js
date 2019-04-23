@@ -156,7 +156,7 @@ function Greeting(props) {
 
 ReactDOM.render(<Greeting UserIsLogion={true}/>,document.getElementById("root7"));
 
-//7. 有状态的渲染
+//7. 有状态的组件渲染
 
 function LoginButton(props) {
     return (
@@ -206,7 +206,277 @@ class LoginController extends React.Component{
 ReactDOM.render(<LoginController/>,document.getElementById("root8"));
 
 
+//9. 列表和key
+//普通渲染
+const number =[1,2,3,4,5];
+const number2 = number.map(r=>r*2);
+console.log(number+" map: "+number2);
+
+//普通元素的嵌套
+const number3 = [1,2,3,4,5];
+const number4 = number3.map((p)=><li key={p.toString()}>{p}</li>);
+
+ReactDOM.render(<ul>{number4}</ul>,document.getElementById("root9"));
+//组件化渲染列表（指定Key）
+function NumberList(props) {
+    const number_1 = props.number;
+    const number_2 = number_1.map(p=><li key={p.toString()}>{p}</li>);
+    return ( <ul>{number_2}</ul> );
+}
+ReactDOM.render(<NumberList number={number3}/>,document.getElementById("root9"));
+
+//组件化渲染列表 (使用key提取Item)
+function ListItem(props) {
+    return <li>{props.value}</li>
+}
+
+function Numberlist2(props) {
+    const number = props.number;
+    const number_1=number.map(p=><ListItem key={p.toString()}
+    value={p}/>);
+    return (<ul>{number_1}</ul>);
+}
+ReactDOM.render(<Numberlist2 number={number3}/>,document.getElementById("roo12"));
 
 
 
+//10 受控的表单元素,使用唯一的state来控制状态
+class Form_exam extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {value: ''};
+        this.handleChange = this.handleChange.bind(this);
+        this.handleCommit = this.handleCommit.bind(this);
+    }
+    handleChange(event){
+        this.setState({value:event.target.value});
+    }
+    handleCommit(event){
+        alert("the commit name："+ this.state.value);
+        event.preventDefault();
+    }
+    render() {
+        return (
+            <form onSubmit={this.handleCommit}>
+                name: <input type="text" onChange={this.handleChange} value={this.state.value}/>
+                <input type="submit" value="提交"/>
+            </form>
+        )
+    }
+}
 
+ReactDOM.render(<Form_exam/>,document.getElementById("roo13"));
+
+
+//11 select选择框
+class FlavorForm extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {value:'c'};
+        this.handleChange = this.handleChange.bind(this);
+        this.handleCommit = this.handleCommit.bind(this);
+    }
+    handleChange(event){
+        this.setState({value:event.target.value});
+    }
+    handleCommit(event){
+        alert("the commit name："+ this.state.value);
+        event.preventDefault();
+    }
+   render() {
+       return (
+         <form onSubmit={this.handleCommit}>
+             <label>
+                 your choose
+             <select value={this.state.value} onChange={this.handleChange}>
+                 <option value="a">a</option>
+                 <option value="b">b</option>
+                 <option value="c">c</option>
+                 <option value="d">d</option>
+             </select>
+             </label>
+             <input type="submit" text="提交"/>
+         </form>
+       );
+   }
+}
+ReactDOM.render(<FlavorForm/>,document.getElementById("roo14"));
+
+
+class MulitForms extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            isGoing: true,
+            offSet:2
+        };
+        this.handleInputChange = this.handleInputChange.bind(this);
+    }
+    handleInputChange(event){
+         const target = event.target;
+         const value = target.type === 'checkbox'?target.checked:target.value;
+         const name = target.name;
+         console.log(name);
+         this.setState({
+             //[name] 自动在name数组中做匹配
+             [name]:value})
+    }
+    render() {
+        return (
+            <form>
+                <label>
+                    the first label:
+                    <input name='isGoing' checked={this.state.isGoing} type='checkbox' onChange={this.handleInputChange}/>
+                    the second label:
+                    <input name='offSet' value={this.state.offSet} type='number' onChange={this.handleInputChange}/>
+                </label>
+            </form>
+        );
+    }
+}
+
+ReactDOM.render(<MulitForms/>,document.getElementById("roo15"));
+
+
+//11.状态提升
+function BoilingVerdict(props){
+     if(props.celsius >=100) return <p>the water would boil.</p>;
+    return <p>the water not boil.</p>;
+}
+
+class Calculator  extends React.Component {
+    constructor(props){
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+        this.state = {temperature:''};
+    }
+    handleChange(event){
+        this.setState({temperature:event.target.value})
+    }
+    render() {
+        const temperature = this.state.temperature;
+        return (
+            <fieldset>
+                <input value={temperature}
+                onChange={this.handleChange}/>
+                <BoilingVerdict celsius={temperature}/>
+            </fieldset>
+        );
+    }
+}
+
+ReactDOM.render(<Calculator/>,document.getElementById("roo16"));
+
+
+//12 状态提升 多个组件
+const  scaleNames = {
+    c: 'Celsius',
+    f: 'Fahrenheit'
+};
+class CalculatorInput extends React.Component {
+    constructor(props){
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+        this.state = {temperature:''}
+    }
+    handleChange(event){
+        this.setState({temperature:event.target.value})
+    }
+    render() {
+        const temperature = this.state.temperature;
+        const scale = this.props.scale;
+        return (<fieldset>
+             <legend>your input temperature is {scaleNames[scale]}:</legend>
+             <input value={temperature}
+                   onChange={this.handleChange}/>
+        </fieldset>);
+    }
+}
+class CalculatorSpan extends React.Component{
+    render() {
+        return (
+            <div>
+                <CalculatorInput scale='c'/>
+                <CalculatorInput scale='f'/>
+            </div>
+        )
+    }
+}
+
+ReactDOM.render(<CalculatorSpan/>,document.getElementById("roo17"));
+
+
+//12 状态提升最终结果，状态提升含义：将子组件的state提升到父组件中，供所有子组件共用
+//华氏度转摄氏度
+function toCelsius(fahrenheit) {
+    return (fahrenheit - 32) * 5 / 9;
+}
+//摄氏度转华氏度
+function toFahrenheit(celsius) {
+    return (celsius * 9 / 5) + 32;
+}
+//温度数据转换和校验
+function tryConvert(temperature, convert) {
+    const input = parseFloat(temperature);
+    if (Number.isNaN(input)) {
+        return '';
+    }
+    const output = convert(input);
+    const rounded = Math.round(output * 1000) / 1000;
+    return rounded.toString();
+}
+
+const  scaleNames2 = {
+    c: 'Celsius',
+    f: 'Fahrenheit'
+};
+class CalculatorInput2 extends React.Component {
+    constructor(props){
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+        this.state = {temperature:''}
+    }
+    handleChange(event){
+        //this.setState({temperature:event.target.value})
+        this.props.onTemperatureChange(event.target.value);
+    }
+    render() {
+        const temperature = this.props.temperature;
+        const scale = this.props.scale;
+        return (<fieldset>
+            <legend>your input temperature is {scaleNames[scale]}:</legend>
+            <input value={temperature}
+                   onChange={this.handleChange}/>
+        </fieldset>);
+    }
+}
+class CalculatorSpan2 extends React.Component{
+    constructor(props){
+        super(props);
+        this.handleCelsius = this.handleCelsius.bind(this);
+        this.handleFahrenheit = this.handleFahrenheit.bind(this);
+        this.state = {temperature: '', scale: 'c'};
+    }
+    handleCelsius(temperature){
+         this.setState({state:'c',temperature})
+    }
+    handleFahrenheit(temperature){
+         this.setState({state:'f',temperature})
+    }
+    render() {
+        const scale = this.state.scale;
+        const temperature = this.state.temperature;
+        const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
+        const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
+
+        return (
+            <div>
+                <CalculatorInput2 scale='c' onTemperatureChange={this.handleCelsius} temperature={celsius}/>
+                <CalculatorInput2 scale='f' onTemperatureChange={this.handleFahrenheit} temperature={fahrenheit}/>
+                <BoilingVerdict celsius={temperature}/>
+            </div>
+        )
+    }
+}
+
+ReactDOM.render(<CalculatorSpan2/>,document.getElementById("roo17"));
